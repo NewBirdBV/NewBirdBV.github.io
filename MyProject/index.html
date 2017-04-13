@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>MyProject</title>
+    <script src="lib/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="lib/jquery-ui.min.js" type="text/javascript"></script>
+    <link href="css/common.css" rel="stylesheet" type="text/css">
+    <link href="lib/jquery-ui.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<!--loading-->
+<script type="text/javascript">
+    var PageHeight=$(window).height();
+    var LoadingHtml=
+            '<div id="loadingDiv" class="loading_Init" style="height:'+PageHeight+'px;">'
+            +'<div class="loading-3"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><p>初始化中...</p></div>'
+            +'</div>';
+    //呈现loading效果
+    document.write(LoadingHtml);
+</script>
+<!--toolBar-->
+<div class="toolBar clearFix">
+    <!--导入文件-->
+    <button class="input-doc" title="打开..."><span></span></button>
+    <!--放大-->
+    <button class="zoom-in" title="放大"><span></span></button>
+    <!--缩小-->
+    <button class="zoom-out" title="缩小"><span></span></button>
+    <!--放大镜-->
+    <button class="mag-glass" title="放大镜"><span></span></button>
+    <div class="op-menu op-mag">
+        <ul>
+            <li class="op-mag-Active">Active</li>
+            <li class="op-mag-Disable">Disable</li>
+            <li>
+                <label for="magLevelRange">Level:</label>
+                <input id="magLevelRange" type="range" min="1" value="2" max="10" />
+            </li>
+            <li>
+                <label for="magSizeRange">Size:</label>
+                <input id="magSizeRange" type="range" min="100" value="0" max="300" step="25"/>
+            </li>
+        </ul>
+    </div>
+    <!--逆时针旋转-->
+    <button class="rotate-counterClockwise" title="逆时针旋转"><span></span></button>
+    <!--顺时针旋转-->
+    <button class="rotate-clockwise" title="顺时针旋转"><span></span></button>
+    <!--测量长度-->
+    <button class="cal-length" title="长度测量"><span></span></button>
+    <div class="op-menu op-length">
+        <ul>
+            <li class="op-length-Active">Active</li>
+            <li class="op-length-Disable">Disable</li>
+            <li class="op-length-Clear">Clear</li>
+        </ul>
+    </div>
+    <!--添加注释-->
+    <button class="annotation" title="添加注释"><span></span></button>
+    <div class="op-menu op-annotation">
+        <ul>
+            <li class="op-annotation-Active">Active</li>
+            <li class="op-annotation-Disable">Disable</li>
+            <li class="op-annotation-Clear">Clear</li>
+        </ul>
+    </div>
+    <!--播放/暂停切片-->
+    <button id="clipState" class="play-clip" title="播放/暂停"><span></span></button>
+    <!--帮助-->
+    <button class="help" title="?"><span></span></button>
+    <!--保存文件-->
+    <button class="save-doc" title="保存"><span></span></button>
+
+</div>
+<!--画布-->
+<div class="contentPanel">
+    <div class="mainPanel clearFix">
+       <!-- <div class="notice-txt">Please Load Files...</div>-->
+       <!-- <canvas id="imageCanvas" class="imageCanvas"></canvas>-->
+        <div id="dicomImageWrapper" style="width:1024px;height:512px;margin:0 auto;position:relative;color: white;"
+             class="cornerstone-enabled-image"
+             oncontextmenu="return false"
+             unselectable='on'
+             onselectstart='return false;'
+             onmousedown='return false;'>
+            <div id="dicomImage" oncontextmenu="return false"
+                 style="width:1024px;height:512px;top:0px;left:0px; position:absolute">
+            </div>
+            <div id="topleft" style="position: absolute;top:0px; left:0px">
+                Patient Name:
+            </div>
+            <div id="topright" style="position: absolute;top:0px; right:0px">
+                Render Time:
+            </div>
+            <div id="bottomright" style="position: absolute;bottom:0px; right:0px">
+                Zoom:
+            </div>
+            <div id="frameRate" style="position: absolute;bottom:20px; right:0px;display: none;"></div>
+            <div id="imageNum" style="position: absolute;bottom:40px; right:0px;display: none;"></div>
+            <div id="bottomleft" style="position: absolute;bottom:0px; left:0px">
+                WW/WC:
+            </div>
+        </div>
+        <div id="threeDWrapper">
+            <div id="container"></div>
+        </div>
+        <div style="display: block;position:relative"><span style="font-style: italic;font-weight:bold;" id="coords"></span></div>
+        <label for="ww">Window Width:</label>
+        <input id="ww" type="text" placeholder="e.g.1000" value="256">
+        <label for="wc">Window Center:</label>
+        <input id="wc" type="text" placeholder="e.g.500" value="128">
+        <button class="apply-btn">Apply</button>
+    </div>
+</div>
+<!--toolBar-->
+<div class="toolBar bottom">
+    <!--切换插值-->
+    <button class="interpolation-doc" title="切换插值"><span></span></button>
+    <!--反转文件-->
+    <button class="invert-doc" title="转置"><span></span></button>
+    <!--实际大小-->
+    <button class="actual-doc" title="实际大小"><span></span></button>
+    <!--上下翻转-->
+    <button class="flip-doc" title="上下翻转"><span></span></button>
+    <!--左右翻转-->
+    <button class="reverse-doc" title="左右翻转"><span></span></button>
+    <!--全屏画布-->
+    <button class="full-screen" title="全屏"><span></span></button>
+    <!--3d模式-->
+    <button class="threedMode" title="3d模型"><span></span></button>
+</div>
+<!--读入文件面板-->
+<div class="input-dialog">
+    <div class="doc-dialog">
+        <div class="doc-closebox">x</div>
+        <div class="doc-picker">
+            <form enctype="multipart/form-data" onsubmit="return false;">
+                <label for="selectmenu">选择导入方式:</label>
+                <select id="selectmenu" name="text">
+                    <option selected="selected">本地</option>
+                    <option>url</option>
+                </select>
+                <label for="path">打开文件:</label>
+                <input id="path" type="file" name="file"/>
+                <input id='url' type='text' name='URL' placeholder='请输入url...' style="display: none">
+                <div id="progressbar" class="readingProgress percent"></div>
+                <button id="button-icon" class="confirm-btn">导入</button>
+                <button class="cancel-btn">取消读取</button>
+            </form>
+        </div>
+    </div>
+</div>
+<!--添加注释面板-->
+<div class="annotation-dialog" title="添加注释" style="display: none">
+    <label for="AnnotationText">注释:</label>
+    <input type="text" class="annoText" style="text-indent: 5px" id="AnnotationText">
+</div>
+<!--修改注释面板-->
+<div class="reAnnotation-dialog" title="修改注释" style="display: none">
+    <label for="reAnnotationText">修改注释:</label>
+    <input type="text" class="reAnnoText" style="text-indent: 5px" id="reAnnotationText">
+</div>
+<!--帮助面板-->
+<div class="help-dialog" title="Tips" style="display: none">
+    <p>1.按下鼠标左键并拖动可以调整窗宽和窗位</p>
+    <p>2.按下鼠标中键并拖动可以移动图像</p>
+    <p>3.按下鼠标右键并拖动可以调整大小</p>
+    <p>4.按下键盘up或down(方向键)可以切换Clip</p>
+</div>
+<!--保存文件面板-->
+<div class="saveDoc-dialog" title="Save"  style="display: none">
+    <label for="filename">Save as:</label>
+    <input type="text" value="example.png" class="filename" style="text-indent: 5px" id="filename">
+</div>
+</body>
+<script src="js/main.js" type="text/javascript" charset="GBK"></script>
+<script src="js/op_ftn.js" type="text/javascript" charset="GBK"></script>
+<script src="js/file_imageloader.js" type="text/javascript" charset="GBK"></script>
+<!-- include the cornerstone library -->
+<script src="lib/cornerstone.js"></script>
+<script src="lib/cornerstoneMath.min.js"></script>
+
+<!-- include the cornerstone tools library -->
+<script src="toolsLib/cornerstoneTools.js"></script>
+
+<!-- include the dicomParser library as the WADO image loader depends on it -->
+<script src="lib/dicomParser.min.js"></script>
+<!-- BEGIN Optional Codecs -->
+
+<!-- OpenJPEG based jpeg 2000 codec -->
+<script src="codecs/openJPEG-FixedMemory.js"></script>
+<!-- PDF.js based jpeg 2000 codec -->
+<!-- NOTE: do not load the OpenJPEG codec if you use this one -->
+<!--<script src="codecs/jpx.min.js"></script>-->
+
+<!-- JPEG-LS codec -->
+<script src="codecs/charLS-FixedMemory-browser.js"></script>
+
+<!-- JPEG Lossless codec -->
+<script src="codecs/jpegLossless.js"></script>
+
+<!-- JPEG Baseline codec -->
+<script src="codecs/jpeg.js"></script>
+
+<!-- Deflate transfer syntax codec -->
+<script src="codecs/pako.min.js"></script>
+
+<!-- END Optional Codecs -->
+
+<!-- include the cornerstoneWADOImageLoader library -->
+<script src="lib/cornerstoneWADOImageLoader.js"></script>
+<!-- uids -->
+<script src="js/uids.js"></script>
+<!-- include special code for these examples which provides images -->
+<script src="exampleImageIdLoader/exampleImageIdLoader.js"></script>
+<!--include three.js-->
+<script src="lib/three.js"></script>
+<script src="lib/DecalGeometry.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script src="lib/dat.gui.min.js"></script>
+<script src="js/threed.js"></script>
+</html>
