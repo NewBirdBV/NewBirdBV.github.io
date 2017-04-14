@@ -3,7 +3,7 @@ body{
 }
 #progressBar{
     width:0;
-    height:3px;
+    height:2px;
     position:fixed;
     background-color:#2085c5;
     opacity:.6;
